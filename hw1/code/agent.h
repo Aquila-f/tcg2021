@@ -99,14 +99,24 @@ private:
 class player : public random_agent {
 public:
 	player(const std::string& args = "") : random_agent("name=dummy role=player " + args),
-		opcode({ 0, 1, 2, 3 }) {std::cout << args << std::endl;}
+		opcode({ 0, 1, 2, 3 }) {arg = args;}
 
 	virtual action take_action(const board& before) {
-		std::shuffle(opcode.begin(), opcode.end(), engine);
-		for (int op : opcode) {
-			board::reward reward = board(before).slide(op);
-			// std::cout << before << std::endl;
-			if (reward != -1) return action::slide(op);
+		if (arg == "greedy"){
+			int greedymove = 0,maxreward = 0;
+			for (int op : opcode) {
+				board::reward reward = board(before).slide(op);
+				if(maxreward <= reward){greedymove = op, maxreward = reward;}
+				}
+			return action::slide(greedymove);
+		}
+		else {
+			std::shuffle(opcode.begin(), opcode.end(), engine);
+			for (int op : opcode) {
+				board::reward reward = board(before).slide(op);
+				// std::cout << before << std::endl;
+				if (reward != -1) return action::slide(op);
+		}
 		}
 		std::cout << before << std::endl;
 		std::cout << s++ << std::endl;
@@ -115,5 +125,6 @@ public:
 
 private:
 	std::array<int, 4> opcode;
+	std::string arg;
 	int s = 0;
 };
