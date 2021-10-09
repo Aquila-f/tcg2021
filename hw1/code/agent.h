@@ -100,6 +100,18 @@ class player : public random_agent {
 public:
 	player(const std::string& args = "") : random_agent("name=dummy role=player " + args),
 		opcode({ 0, 1, 2, 3 }) {arg = args;}
+		
+	std::tuple<unsigned int , int> get_maxtile_info(const board inp){
+		unsigned int maxtileplace=0;
+		unsigned int maxtile = 0;
+			board::grid t = inp.infot();
+			for(int r=0;r<4;r++){
+				for(int c=0;c<4;c++){
+					if (maxtile < t[r][c]){maxtileplace = r*4+c; maxtile = t[r][c];} 
+				}
+			}
+		return std::make_tuple(maxtileplace, maxtile);
+	}
 
 	virtual action take_action(const board& before) {
 		if (arg == "greedy"){
@@ -123,16 +135,35 @@ public:
 				}
 			return action::slide(greedymove);
 		}
-		// else if (arg == "heuristic"){
-		// 	std::cout << ">>>" << std::endl;
-		// 	std::cout << before. << std::endl;
-		// 	std::cout << "<<<" << std::endl;
-		// 	// for (auto& row : before.tile()){
-		// 	// 	for(auto t : row) 
-		// 	// }
-		// 	// std::cout << before.operator board::grid &() << std::endl;
+		else if (arg == "heuristic"){
 
-		// }
+			auto maxinfo = get_maxtile_info(before);
+			unsigned int maxtile_pos_before = std::get<0>(maxinfo);
+			int maxtile_val = std::get<1>(maxinfo);
+			int greedymove = 0,maxreward = 0;
+
+
+			for (int op1 : opcode) {
+				board temp = board(before);
+				board::reward reward = temp.slide(op1);
+				if (reward == -1) continue;
+				auto maxinfo2 = get_maxtile_info(temp);
+				unsigned int maxtile_pos_before2 = std::get<0>(maxinfo2);
+				int maxtile_val2 = std::get<1>(maxinfo2);
+				if(maxtile_pos_before2 == maxtile_pos_before && maxtile_val > 12) reward += board::fibonacci(maxtile_val - 2);
+
+				
+				for (int op2 : opcode){
+					board temp1 = board(temp);
+					board::reward reward1 = temp1.slide(op2);
+					board::reward totalreward = reward + reward1;
+					if(std::get<0>(get_maxtile_info(temp1)) == maxtile_pos_before2 && maxtile_val2 > 6) reward += board::fibonacci(maxtile_val2 - 2);
+					if(maxreward <= totalreward){greedymove = op1, maxreward = totalreward;}}
+				}
+			
+			return action::slide(greedymove);
+			
+		}
 		else {
 			std::shuffle(opcode.begin(), opcode.end(), engine);
 			for (int op : opcode) {
