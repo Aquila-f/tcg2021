@@ -110,16 +110,39 @@ public:
 				}
 			return action::slide(greedymove);
 		}
+		else if (arg == "heuristics2step"){
+			int greedymove = 0,maxreward = 0;
+			for (int op1 : opcode) {
+				board temp = board(before);
+				board::reward reward = temp.slide(op1);
+				if (reward == -1) continue;
+				for (int op2 : opcode){
+					board::reward totalreward = reward + temp.slide(op2);
+					if(maxreward <= totalreward){greedymove = op1, maxreward = totalreward;}
+				}
+				}
+			return action::slide(greedymove);
+		}
+		// else if (arg == "heuristic"){
+		// 	std::cout << ">>>" << std::endl;
+		// 	std::cout << before. << std::endl;
+		// 	std::cout << "<<<" << std::endl;
+		// 	// for (auto& row : before.tile()){
+		// 	// 	for(auto t : row) 
+		// 	// }
+		// 	// std::cout << before.operator board::grid &() << std::endl;
+
+		// }
 		else {
 			std::shuffle(opcode.begin(), opcode.end(), engine);
 			for (int op : opcode) {
-				board::reward reward = board(before).slide(op);
-				// std::cout << before << std::endl;
-				if (reward != -1) return action::slide(op);
+				
+				board::reward reward = board(before).slide(op) ;
+
+				if (reward != -1) return action::slide(op);}
 		}
-		}
-		std::cout << before << std::endl;
-		std::cout << s++ << std::endl;
+		// std::cout << before << std::endl;
+		// std::cout << s++ << std::endl;
 		return action();
 	}
 
