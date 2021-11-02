@@ -16,6 +16,7 @@
 #include <algorithm>
 #include "board.h"
 #include "action.h"
+#include "weight.h"
 #include <fstream>
 
 class agent {
@@ -67,6 +68,52 @@ protected:
 };
 
 /**
+ * base agent for agents with weight tables and a learning rate
+ */
+class weight_agent : public agent {
+public:
+	weight_agent(const std::string& args = "") : agent(args), alpha(0) {
+		if (meta.find("init") != meta.end())
+			init_weights(meta["init"]);
+		if (meta.find("load") != meta.end())
+			load_weights(meta["load"]);
+		if (meta.find("alpha") != meta.end())
+			alpha = float(meta["alpha"]);
+	}
+	virtual ~weight_agent() {
+		if (meta.find("save") != meta.end())
+			save_weights(meta["save"]);
+	}
+
+protected:
+	virtual void init_weights(const std::string& info) {
+//		net.emplace_back(65536); // create an empty weight table with size 65536
+//		net.emplace_back(65536); // create an empty weight table with size 65536
+	}
+	virtual void load_weights(const std::string& path) {
+		std::ifstream in(path, std::ios::in | std::ios::binary);
+		if (!in.is_open()) std::exit(-1);
+		uint32_t size;
+		in.read(reinterpret_cast<char*>(&size), sizeof(size));
+		net.resize(size);
+		for (weight& w : net) in >> w;
+		in.close();
+	}
+	virtual void save_weights(const std::string& path) {
+		std::ofstream out(path, std::ios::out | std::ios::binary | std::ios::trunc);
+		if (!out.is_open()) std::exit(-1);
+		uint32_t size = net.size();
+		out.write(reinterpret_cast<char*>(&size), sizeof(size));
+		for (weight& w : net) out << w;
+		out.close();
+	}
+
+protected:
+	std::vector<weight> net;
+	float alpha;
+};
+
+/**
  * random environment
  * add a new random tile to an empty cell
  * 2-tile: 90%
@@ -99,86 +146,17 @@ private:
 class player : public random_agent {
 public:
 	player(const std::string& args = "") : random_agent("name=dummy role=player " + args),
-		opcode({ 0, 1, 2, 3 }) {arg = args;}
-		
-	std::tuple<unsigned int , int> get_maxtile_info(const board inp){
-		unsigned int maxtileplace=0;
-		unsigned int maxtile = 0;
-			board::grid t = inp.infot();
-			for(int r=0;r<4;r++){
-				for(int c=0;c<4;c++){
-					if (maxtile < t[r][c]){maxtileplace = r*4+c; maxtile = t[r][c];} 
-				}
-			}
-		return std::make_tuple(maxtileplace, maxtile);
-	}
+		opcode({ 0, 1, 2, 3 }) {}
 
 	virtual action take_action(const board& before) {
-		if (arg == "greedy"){
-			int greedymove = 0,maxreward = 0;
-			for (int op : opcode) {
-				board::reward reward = board(before).slide(op);
-				if(maxreward <= reward){greedymove = op, maxreward = reward;}
-				}
-			return action::slide(greedymove);
+		std::shuffle(opcode.begin(), opcode.end(), engine);
+		for (int op : opcode) {
+			board::reward reward = board(before).slide(op);
+			if (reward != -1) return action::slide(op);
 		}
-		else if (arg == "heuristics2step"){
-			int greedymove = 0,maxreward = 0;
-			for (int op1 : opcode) {
-				board temp = board(before);
-				board::reward reward = temp.slide(op1);
-				if (reward == -1) continue;
-				for (int op2 : opcode){
-					board::reward totalreward = reward + temp.slide(op2);
-					if(maxreward <= totalreward){greedymove = op1, maxreward = totalreward;}
-				}
-				}
-			return action::slide(greedymove);
-		}
-		else if (arg == "heuristic"){
-
-			auto maxinfo = get_maxtile_info(before);
-			unsigned int maxtile_pos_before = std::get<0>(maxinfo);
-			int maxtile_val = std::get<1>(maxinfo);
-			int greedymove = 0,maxreward = 0;
-
-
-			for (int op1 : opcode) {
-				board temp = board(before);
-				board::reward reward = temp.slide(op1);
-				if (reward == -1) continue;
-				auto maxinfo2 = get_maxtile_info(temp);
-				unsigned int maxtile_pos_before2 = std::get<0>(maxinfo2);
-				int maxtile_val2 = std::get<1>(maxinfo2);
-				if(maxtile_pos_before2 == maxtile_pos_before && maxtile_val > 12) reward += board::fibonacci(maxtile_val - 2);
-
-				
-				for (int op2 : opcode){
-					board temp1 = board(temp);
-					board::reward reward1 = temp1.slide(op2);
-					board::reward totalreward = reward + reward1;
-					if(std::get<0>(get_maxtile_info(temp1)) == maxtile_pos_before2 && maxtile_val2 > 6) reward += board::fibonacci(maxtile_val2 - 2);
-					if(maxreward <= totalreward){greedymove = op1, maxreward = totalreward;}}
-				}
-			
-			return action::slide(greedymove);
-			
-		}
-		else {
-			std::shuffle(opcode.begin(), opcode.end(), engine);
-			for (int op : opcode) {
-				
-				board::reward reward = board(before).slide(op) ;
-
-				if (reward != -1) return action::slide(op);}
-		}
-		// std::cout << before << std::endl;
-		// std::cout << s++ << std::endl;
 		return action();
 	}
 
 private:
 	std::array<int, 4> opcode;
-	std::string arg;
-	int s = 0;
 };
