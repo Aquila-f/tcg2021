@@ -81,6 +81,8 @@ public:
 		std::cout << std::fixed << std::setprecision(0);
 		std::cout << count << "\t";
 		std::cout << "avg = " << (sum / blk) << ", ";
+		std::cout << "sum = " << sum << ", ";
+		std::cout << "blk = " << blk << ", ";
 		std::cout << "max = " << (max) << ", ";
 		std::cout << "ops = " << (sop * 1000.0 / sdu);
 		std::cout <<     " (" << (pop * 1000.0 / pdu);
