@@ -27,6 +27,9 @@ public:
 	episode() : ep_state(initial_state()), ep_score(0), ep_time(0) {
 		ep_moves.reserve(board::size_x * board::size_y);
 	}
+	episode(board bb) : ep_state(bb), ep_score(0), ep_time(0) {
+		ep_moves.reserve(board::size_x * board::size_y);
+	}
 
 public:
 	board& state() { return ep_state; }

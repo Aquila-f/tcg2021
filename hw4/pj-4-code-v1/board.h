@@ -274,6 +274,7 @@ public:
 		return in;
 	}
 
+
 protected:
 	static const grid& initial() { static grid stone; return stone; }
 	static __attribute__((constructor)) void init_initial_scheme() {
