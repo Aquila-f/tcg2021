@@ -116,99 +116,49 @@ public:
 		// std::cout << state;
 		if(name() == "mcts"){
 
-			std::cout << state;
-
-			node rootnode;
-			std::stack<action::place> action_stack;
-			std::vector<node*> update_node;
+			node* rootnode = new node[1];
 			board after = state;
-			;
 
-			int heurtmp = 0;
-			for (const action::place move : space) {
+			for(int i = 0;i<100;i++){
+				simulate_win = false;
 				after = state;
-				if (move.apply(after) == board::legal){
-					
-					action_stack.push(move);
-					heurtmp ++;	
-				}
+				playOneSequence(rootnode, after);
+				updatenode(simulate_win);
 			}
-			if(heurtmp == 0) return action();
-			
-			std::cout << heurtmp << "-\n"; 
 
-			for(int i=0;i<100;i++){
-				
-				after = state;
-				if(action_stack.size() != 0){
-					node* tmpnode = new node[1];
-					// node* tmpnode = mall; 
-					
-					tmpnode->move = action_stack.top();
-					tmpnode->totalmove_count += 1;
-					tmpnode->move.apply(after);
+			// outputnode(rootnode);
+			// for(auto k : rootnode->level_vector){
+			// 	outputnode(k);
+			// }
 
-					// std::cout << after;
-					
-
-					if(!simulate_one(after)){
-						tmpnode->winvalue += 1;
-					};
-
-					rootnode.level_vector.push_back(tmpnode);
-					action_stack.pop();
-
-					// std::cout << action_stack.size() << "\n";
-				}else{
-					// std::cout << rootnode.level_vector.size() << ",";
+			// after = state;
+			// std::cout << after;
+			// randomplay(after, space);
+			// std::cout << after;
 
 
-					// std::cout << i << ",\n";
-					after = state;
-					node* maxtmpnode = new node[1];
-			
-					double maxvalue = -1;
-					
-					for(auto tno : rootnode.level_vector){
-						double v = tno->winvalue/tno->totalmove_count;
-						if(maxvalue <= v){
-							maxvalue = v;
-							maxtmpnode = tno;
 
-						}
-						// outputnode(tno);
-					}
-
-					// outputnode(maxtmpnode);
-
-					maxtmpnode->totalmove_count +=1;
-					maxtmpnode->move.apply(after);
-					if(!simulate_one(after)){
-						maxtmpnode->winvalue += 1;
-					};
-				}
-
-			}
-			
-
-			after = state;
 			node* maxtmpnode = new node[1];
 			double maxvalue = -1;
 
 			
-			for(auto tno : rootnode.level_vector){
+			for(auto tno : rootnode->level_vector){
 				double v = tno->winvalue/tno->totalmove_count;
 				if(maxvalue <= v){
 					maxvalue = v;
 					maxtmpnode = tno;
 				}
-				outputnode(tno);
+				// outputnode(tno);
 			}
 
+			after = state;
 			maxtmpnode->move.apply(after);
 			// if(assss == 3) exit(0);
 			// assss += 1;
 			return maxtmpnode->move;
+
+			exit(0);
+
 		}else if(name() == "heur"){
 			// // std::cout << "heur" << "\n";
 			// int heurtmp = 0;
@@ -235,14 +185,13 @@ public:
 			// 	board after = state;
 			// 	if (move.apply(after) == board::legal){
 			// 		return move;
-			// 	}
+			// 	}state
 			// 	heurtmp ++;
 			// }
 			// return action();
 
 		}else{
-
-
+			
 			
 			std::shuffle(space.begin(), space.end(), engine);
 			for (const action::place& move : space) {
@@ -289,23 +238,99 @@ public:
 		return true;
 	}
 
-	int a;
-	unsigned b;
-	action::place s(int,unsigned);
 	struct node{
 		double winvalue;
 		double totalmove_count;
-		// int available_node_count = 0;
+		int available_node_count;
 		action::place move;
 		std::vector<node*> level_vector;
 		// std::unordered_map<std::string, node*> same_level_node_table;
-		node() : winvalue(0),totalmove_count(0),move(1,1){}
+		node() : winvalue(0),totalmove_count(0),available_node_count(-1),move(1,1){}
 	};
 	// struct node1{
 	// 	unorder
 	// }
 
 	std::vector<node*> history;
+
+	void playOneSequence(node*& rootnode,board& state){
+
+		update_node_vector.push_back(rootnode);
+
+		board after = state;
+
+		if(rootnode->available_node_count == -1){
+			int heurtmp = 0;
+			for (const action::place move : space) {
+				after = state;
+				if (move.apply(after) == board::legal){
+					node* tmpnode = new node[1];
+					tmpnode->move = move;
+					rootnode->level_vector.push_back(tmpnode);
+					heurtmp ++;	
+				}
+			}
+			rootnode->available_node_count = heurtmp;
+			if(heurtmp == 0) return;
+		}
+
+		node* tpnode = new node[1];
+		double maxtnoval = -1;
+		bool deeper_flag = true;
+
+		for(auto tno : rootnode->level_vector){
+			
+			
+			
+			if(tno->totalmove_count == 0){
+				// tno->totalmove_count += 1;
+				tno->move.apply(state);
+				update_node_vector.push_back(tno);
+
+				if(!simulate_one(state)){
+					simulate_win = true;
+					// tno->winvalue += 1;
+				};
+
+				deeper_flag = false;
+				break;
+
+			}else{
+				double v = tno->winvalue/tno->totalmove_count;
+				if(maxtnoval <= v){
+					maxtnoval = v;
+					tpnode = tno;
+				}
+			}
+		}
+
+		
+
+		if(deeper_flag){
+			// std::cout << "####################\n";	
+			// for(auto tno : rootnode.level_vector){
+			// 	// outputnode(tno);
+			// }
+
+			// std::cout << tpnode->move.position() << "\n";
+
+			tpnode->move.apply(state);
+			if(simulate_white_move(state)){
+				simulate_win = false;
+				return;
+			};
+			// update_node_vector.push_back(tpnode);
+
+			playOneSequence(tpnode, state);
+		}
+	};
+
+	bool simulate_white_move(board& state){
+		// std::cout << state;
+		if(randomplay(state, space_a)) return true;
+		// std::cout << state;
+		return false;
+	}
 
 	// bool check_neighbor(const board& b, const int num){
 	// 	int target_color = 1;
@@ -335,10 +360,30 @@ public:
 
 	// void updateValue(node,)
 
+	void updatenode(bool win){
+		// std::cout << "updatenode-----\n";
+		if(win){
+			for(auto updatenode : update_node_vector){	
+				updatenode->totalmove_count += 1;
+				updatenode->winvalue += 1;
+				// outputnode(updatenode);
+			}
+
+		}else{
+			for(auto updatenode : update_node_vector){
+				updatenode->totalmove_count += 1;
+				// outputnode(updatenode);
+			}
+		}
+		// std::cout << "updatenode-----end\n";
+		update_node_vector.clear();
+	}
+
 	void outputnode(const node* tno){
-		std::cout << "move: " << tno->move << " ";
+		std::cout << "move: " << action::place(tno->move).position() << " ";
 		std::cout << "ttcu: " << tno->totalmove_count << " ";
-		std::cout << "winc: " << tno->winvalue << " \n";
+		std::cout << "winc: " << tno->winvalue << " ";
+		std::cout << "ttcu: " << tno->available_node_count << "\n";
 	}
 
 private:
@@ -348,5 +393,7 @@ private:
 	board::piece_type who_a;
 	std::string arg;
 	node* statenode;
-	int assss = 0;
+	std::vector<node*> update_node_vector;
+	bool simulate_win;
+
 };
