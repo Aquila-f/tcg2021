@@ -1,12 +1,24 @@
 #!/bin/bash
 echo "GoGui-TwoGTP Launcher V20211112"
 # commands for player 1
-P1B='./nogo --shell --name="Hollow-Black" --black="mcts T=1000"'
-P1W='./nogo --shell --name="Hollow-White" --white="mcts T=1000"'
+# P1B='../pj-4-code-v1/nogo --shell --black="mcts N=5000 c=1"'
+# P1W='../pj-4-code-v1/nogo --shell --white="mcts N=5000 c=1"'
+P1B='../pj-4-code-v1/nogo --shell --black="mcts T=1000 c=1 TMT=er"'
+P1W='../pj-4-code-v1/nogo --shell --white="mcts T=1000 c=1 TMT=er"'
+# P1B='./nogo-judge --shell --name="Judge-Weak-Black" --black="N=200 c=0.1 unlock!"'
+# P1W='./nogo-judge --shell --name="Judge-Weak-White" --white="N=200 c=0.1 unlock!"'
+# P1B='./nogo-judge --shell --name="Judge-Weak-Black" --black="weak"'
+# P1W='./nogo-judge --shell --name="Judge-Weak-White" --white="weak"'
 # commands for local player 2
-P2B='./nogo-judge --shell --name="Judge-Weak-Black" --black="weak"'
-P2W='./nogo-judge --shell --name="Judge-Weak-White" --white="weak"'
-# commands for remote player 2
+# P2B='./nogo-judge --shell --name="Judge-Weak-Black" --black="N=200 c=0.1 unlock!"'
+# P2W='./nogo-judge --shell --name="Judge-Weak-White" --white="N=200 c=0.1 unlock!"'
+# P2B='./nogo-judge --shell --name="Judge-Weak-Black" --black="weak"'
+# P2W='./nogo-judge --shell --name="Judge-Weak-White" --white="weak"'
+# P2B='../pj-4-code-v1/nogo --shell --black="mcts N=5000 c=1 simenemy=a"'
+# P2W='../pj-4-code-v1/nogo --shell --white="mcts N=5000 c=1 simenemy=a"'
+P2B='../pj-4-code-v1/nogo --shell --black="mcts T=1000 c=1 TMT=lr"'
+P2W='../pj-4-code-v1/nogo --shell --white="mcts T=1000 c=1 TMT=lr"'
+# commands for remote player 2W
 #P2B="gogui-client tcglinux1 10000"
 #P2W="gogui-client tcglinux1 10000"
 

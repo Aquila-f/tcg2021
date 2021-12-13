@@ -16,6 +16,7 @@
 #include <stack>
 #include <type_traits>
 #include <algorithm>
+#include <ctime>
 // #include "episode.h"
 #include "board.h"
 #include "action.h"
@@ -49,6 +50,11 @@ public:
 	virtual void notify(const std::string& msg) { meta[msg.substr(0, msg.find('='))] = { msg.substr(msg.find('=') + 1) }; }
 	virtual std::string name() const { return property("name"); }
 	virtual std::string role() const { return property("role"); }
+	virtual std::string mcts_c() const { return property("c"); }
+	virtual std::string enemy_state_playtype() const { return property("simenemy"); }
+	virtual std::string s_count() const { return property("N"); }
+	virtual std::string t_count() const { return property("T"); }
+	virtual std::string time_m_type() const { return property("TMT"); }
 	
 
 protected:
@@ -85,13 +91,21 @@ class player : public random_agent {
 public:
 	player(const std::string& args = "") : random_agent("name=random role=unknown " + args),
 		space(board::size_x * board::size_y), who(board::empty),
-		space_a(board::size_x * board::size_y), who_a(board::empty){
+		space_a(board::size_x * board::size_y), who_a(board::empty),
+		enemy_state_playmode("mctsn"),c(0.1),simulation_count(100),simulation_time(10005),
+		time_management(1)
+		{
 			
 		
 		if (name().find_first_of("[]():; ") != std::string::npos)
 			throw std::invalid_argument("invalid name: " + name());
 		if (role() == "black"){ who = board::black; who_a = board::white;}
 		if (role() == "white"){ who = board::white; who_a = board::black;}
+		if (enemy_state_playtype() != "mctsn") enemy_state_playmode = enemy_state_playtype();
+		if (mcts_c() != "0") c = atof(mcts_c().c_str());
+		if (s_count() != "100") simulation_count = atof(s_count().c_str());
+		if (t_count() != "0"){simulation_time = atof(t_count().c_str());} 
+		if (time_m_type() != "normal"){time_management_type = time_m_type();} 
 		if (who == board::empty)
 			throw std::invalid_argument("invalid role: " + role());
 		if (who_a == board::empty)
@@ -102,49 +116,95 @@ public:
 
 		for (size_t i = 0; i < space_a.size(); i++)
 			space_a[i] = action::place(i, who_a);
+		
+
+		
 
 	}
 
-	virtual void open_episode(const std::string& flag = "") {
-		history.clear();
-	}
-	virtual void close_episode(const std::string& flag = "") {
+	// virtual void open_episode(const std::string& flag = "") {
+	// 	// history.clear();
+	// }
+	// virtual void close_episode(const std::string& flag = "") {
 
-	}
+	// }
 
 	virtual action take_action(const board& state) {
 		// std::cout << state;
+		// std::cout << state.info() << "\n";
 		if(name() == "mcts"){
 
 			node* rootnode = new node[1];
+			record_vector.push_back(rootnode);
 			board after = state;
+			double v;
+			int sim_times = 0;
 
-			for(int i = 0;i<200;i++){
+			// clock_t now = clock()+1000*simulation_time;
+			// double = (7*pow(time_management, -0.8))
+			// clock_t now = clock()+ceil(7*pow(time_management, -0.8)*1000)*simulation_time;
+			clock_t now = clock()+time_managment();
+		
+			
+			// clock_t bef = clock();
+
+			
+			while(now > clock()){
 				self_simulate_win = false;
 				after = state;
-				playOneSequence(rootnode, after, 0);
+				playOneSequence(rootnode, after);
 				updatenode(self_simulate_win);
+				sim_times++;
+				if(simulation_time == 10005 && sim_times >= simulation_count) break;
 			}
-			// exit(0);
 
-			node* maxtmpnode = new node[1];
+			// int affter = clock();
+
+			// std::cout << sim_times << "-\n";
+			
+			
+
+			// for(int i = 0;i<simulation_count;i++){
+			// 	self_simulate_win = false;
+			// 	after = state;
+			// 	playOneSequence(rootnode, after);
+			// 	updatenode(self_simulate_win);
+			// }
+			// for(auto kk : rootnode->level_vector){
+			// 	outputnode(kk);
+			// }
+
+
+			// std::cout << clock()-bef << "-\n";
+
+
+			// node* maxtmpnode = new node[1];
+			action::place final_move(0,0);
+			
+			// std::cout << action << "-\n";
 			double maxvalue = -1;
 
 			
 			for(auto tno : rootnode->level_vector){
-				double v = tno->winvalue/tno->totalmove_count;
+				v = tno->winvalue/tno->totalmove_count;
+				// v = tno->totalmove_count;
 				if(maxvalue <= v){
 					maxvalue = v;
-					maxtmpnode = tno;
+					final_move = tno->move;
+					// maxtmpnode = tno;
 				}
 				// outputnode(tno);
 			}
-		
 
 			after = state;
-			maxtmpnode->move.apply(after);
+			final_move.apply(after);
 
-			return maxtmpnode->move;
+			noderelease(rootnode);
+
+			std::cout << final_move << "-\n";
+
+			// if(final_move)
+			return final_move;
 
 			exit(0);
 
@@ -191,17 +251,23 @@ public:
 		}
 	}
 
-	bool simulate_one(board after){
-		// std::cout << "self : "<< who << "\n";
+	bool simulate_one(board after, bool is_self){
+		
+		std::vector<action::place> inspace1 = space_a;
+		std::vector<action::place> inspace2 = space;
+		if(!is_self){
+			inspace1 = space;
+			inspace2 = space_a;
+		}
+
 		bool self_loss_flag;
-		std::shuffle(space_a.begin(), space_a.end(), engine);
-		for (const action::place& move : space_a) {
+		std::shuffle(inspace1.begin(), inspace1.end(), engine);
+		for (const action::place& move : inspace1) {
 			if (move.apply(after) == board::legal){
 				self_loss_flag = true;
 				move.apply(after);
 				// std::cout << "enemy : \n"<< after;
-				self_loss_flag = randomplay_loss(after, space);
-
+				self_loss_flag = randomplay_loss(after, inspace2);
 
 				// if(self_loss_flag) std::cout << "self loss\n";
 				if(self_loss_flag) return true;
@@ -234,13 +300,9 @@ public:
 		// std::unordered_map<std::string, node*> same_level_node_table;
 		node() : winvalue(0),totalmove_count(0),available_node_count(-1),move(1,0){}
 	};
-	// struct node1{
-	// 	unorder
-	// }
 
-	std::vector<node*> history;
 
-	void playOneSequence(node*& rootnode,board& state, int depth){
+	void playOneSequence(node*& rootnode,board& state){
 
 		update_node_vector.push_back(rootnode);
 
@@ -248,10 +310,14 @@ public:
 
 		if(rootnode->available_node_count == -1){
 			int heurtmp = 0;
+
+			std::shuffle(space.begin(), space.end(), engine);
+
 			for (const action::place move : space) {
 				after = state;
 				if (move.apply(after) == board::legal){
 					node* tmpnode = new node[1];
+					record_vector.push_back(tmpnode);
 					tmpnode->move = move;
 					rootnode->level_vector.push_back(tmpnode);
 					heurtmp ++;	
@@ -264,8 +330,9 @@ public:
 		if(rootnode->level_vector.size() == 0) return;
 
 		node* tpnode = new node[1];
+		record_vector.push_back(tpnode);
 		double maxtnoval = -1;
-		bool deeper_flag = true;
+		double v;
 
 		for(auto tno : rootnode->level_vector){
 			
@@ -274,15 +341,15 @@ public:
 				tno->move.apply(state);
 				update_node_vector.push_back(tno);
 
-				if(!simulate_one(state)){
-					self_simulate_win = true;
-				};
-
-				deeper_flag = false;
-				break;
+				if(!simulate_one(state, true)) self_simulate_win = true;
+				// std::cout << &tpnode << ",";
+				// delete [] tpnode;
+				return;
 
 			}else{
-				double v = tno->winvalue/tno->totalmove_count;
+				// std::cout << c*sqrt(log(rootnode->totalmove_count)/tno->totalmove_count) << "\n";
+				v = tno->winvalue/tno->totalmove_count+c*sqrt(log(rootnode->totalmove_count)/tno->totalmove_count);
+				// v = tno->totalmove_count;
 				if(maxtnoval <= v){
 					maxtnoval = v;
 					tpnode = tno;
@@ -290,25 +357,30 @@ public:
 			}
 		}
 
-		if(deeper_flag){
-			tpnode->move.apply(state);
-			simulate_enemy_move(tpnode, state, depth++);
-		}
+		tpnode->move.apply(state);
+		simulate_enemy_move(tpnode, state);
+
 	};
 
-	void simulate_enemy_move(node*& rootnode, board& state, int depth){
-		std::string playmode = "random";
-
+	void simulate_enemy_move(node*& rootnode, board& state){
+		
+		// std::cout << playmode << ",";
 		update_node_vector.push_back(rootnode);
+
+		double v;
+
+		
 
 		board after = state;
 
 		if(rootnode->available_node_count == -1){
 			int heurtmp = 0;
+			std::shuffle(space_a.begin(), space_a.end(), engine);
 			for (const action::place move : space_a) {
 				after = state;
 				if (move.apply(after) == board::legal){
 					node* tmpnode = new node[1];
+					record_vector.push_back(tmpnode);
 					tmpnode->move = move;
 					rootnode->level_vector.push_back(tmpnode);
 					heurtmp ++;	
@@ -325,19 +397,74 @@ public:
 			self_simulate_win = true;
 			return;
 		}
+		node* tpnode = new node[1];
+		record_vector.push_back(tpnode);
 
 		// std::cout << "white move size - " << rootnode->level_vector.size() << "\n";
-		if(playmode == "random"){
+		if(enemy_state_playmode == "random"){
 			std::shuffle(rootnode->level_vector.begin(), rootnode->level_vector.end(), engine);
-			// std::cout << state;
-			rootnode->level_vector[0]->move.apply(state);
-			playOneSequence(rootnode->level_vector[0], state, depth++);
-			// std::cout << state;
-		}else{
 			
-		}
+			tpnode = rootnode->level_vector[0];
+			tpnode->move.apply(state);
+			
+			// std::cout << state;
+		}else if(enemy_state_playmode == "mctsn"){
 
+			double maxtnoval = -1;
+
+			for(auto tno : rootnode->level_vector){
+				
+				if(tno->totalmove_count == 0){
+
+					tno->move.apply(state);
+					update_node_vector.push_back(tno);
+
+					if(simulate_one(state, false)) self_simulate_win = true;
+					// delete [] tpnode;
+					return;
+
+				}else{
+					
+					v = tno->winvalue/tno->totalmove_count+c*sqrt(log(rootnode->totalmove_count)/tno->totalmove_count);
+					
+					// double v = tno->winvalue/tno->totalmove_count;
+					if(maxtnoval < v){
+						maxtnoval = v;
+						tpnode = tno;
+					}
+				}
+			}
+			tpnode->move.apply(state);			
+		}else{
+			double maxtnoval = -1;
+
+			for(auto tno : rootnode->level_vector){
+				
+				if(tno->totalmove_count == 0){
+
+					tno->move.apply(state);
+					update_node_vector.push_back(tno);
+
+					if(simulate_one(state, false)) self_simulate_win = true;
+					// delete [] tpnode;
+					return;
+
+				}else{
+					v = 1-(tno->winvalue/tno->totalmove_count)+c*sqrt(log(rootnode->totalmove_count)/tno->totalmove_count);
+					// double v = 1-(tno->winvalue/tno->totalmove_count);
+					if(maxtnoval <= v){
+						maxtnoval = v;
+						tpnode = tno;
+					}
+				}
+			}
+			tpnode->move.apply(state);	
+		}
+		playOneSequence(tpnode, state);
+		
+		
 	}
+
 
 	// bool check_neighbor(const board& b, const int num){
 	// 	int target_color = 1;
@@ -366,6 +493,35 @@ public:
 	// }
 
 	// void updateValue(node,)
+	double time_managment(){
+		double return_time;
+		if(time_management_type == "er"){
+			return_time = ceil(7*pow(time_management, -0.8)*1000)*simulation_time;
+		}else if(time_management_type == "lr"){
+			return_time = (1.9-0.05*time_management)*1000*simulation_time;
+		}else{
+			return_time = 1000*simulation_time;
+		}
+		time_management++;
+		return return_time;
+	}
+
+	void noderelease(node* release_node){
+
+		while(release_node->level_vector.size() > 0){
+			// node* dd = release_node->level_vector.back();
+			// outputnode(dd);
+			noderelease(release_node->level_vector.back());
+			// outputnode(dd);
+			
+			
+			release_node->level_vector.pop_back();
+		}
+		release_node->level_vector.clear();
+		// std::cout << release_node->level_vector.size() << ",";
+		delete [] release_node;
+		// return;
+	}
 
 	void updatenode(bool win){
 		// std::cout << "updatenode-----\n";
@@ -393,14 +549,28 @@ public:
 		std::cout << "ttcu: " << tno->available_node_count << "\n";
 	}
 
+	void timetransform(const time_t now){
+		tm *ltm = localtime(&now);
+		std::cout << "time: "<< ltm->tm_hour << ":";
+		std::cout << ltm->tm_min << ":";
+		std::cout << ltm->tm_sec << std::endl;
+	}
+
 private:
 	std::vector<action::place> space;
 	board::piece_type who;
 	std::vector<action::place> space_a;
 	board::piece_type who_a;
-	std::string arg;
-	node* statenode;
+
 	std::vector<node*> update_node_vector;
 	bool self_simulate_win;
+	std::string enemy_state_playmode;
+	double c;
+	double simulation_count;
+	double simulation_time;
 
+	
+	std::vector<node*> record_vector;
+	std::string time_management_type;
+	double time_management;
 };

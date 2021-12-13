@@ -1,0 +1,16 @@
+(;FF[4]CA[UTF-8]AP[gogui-twogtp:1.4.9]SZ[9]
+KM[0]PB[Judge-Weak-Black]PW[TCG-HollowNoGo-Demo]DT[2021-12-13]RE[W+R]
+C[Black command: ./nogo-judge --shell --name="Judge-Weak-Black" --black="mcts N=10000 c=1 unlock!"
+White command: ../pj-4-code-v1/nogo --shell --white="mcts N=5000 c=1 simenemy=a"
+Black version: 2021
+White version: 2021
+Result[Black\]: W+R
+Result[White\]: W+R
+Host: NV16 (Intel(R) Xeon(R) CPU E5-2678 v3 @ 2.50GHz)
+Date: December 13, 2021 at 1:00:39 PM CST]
+;B[ha];W[ah];B[ib];W[fc];B[he];W[cg];B[gg];W[bi];B[hi];W[gf]
+;B[dh];W[cb];B[ch];W[ce];B[ad];W[ei];B[ea];W[ba];B[ag];W[ii]
+;B[bf];W[ab];B[fh];W[eb];B[gd];W[dc];B[id];W[gb];B[hc];W[da]
+;B[eg];W[ga];B[hf];W[bc];B[cc];W[bd];B[ig];W[hg];B[gh];W[ie]
+;B[fi];W[ae];B[di];W[af];B[cf];W[bh];B[bg];W[fb];B[ci];W[gc]
+;B[fg];W[hb];B[hd];W[aa];B[ic];W[ih];B[ia];W[db];B[gi];W[ca])
