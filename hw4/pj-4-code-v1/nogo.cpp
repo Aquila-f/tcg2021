@@ -11,11 +11,15 @@
 #include <fstream>
 #include <iterator>
 #include <string>
+// #include "mcts_thread.h"
 #include "board.h"
 #include "action.h"
+#include "mcts_thread.h"
 #include "agent.h"
 #include "episode.h"
 #include "statistic.h"
+
+
 
 int main(int argc, const char* argv[]) {
 	std::cout << "HollowNoGo-Demo: ";
