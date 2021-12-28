@@ -1,0 +1,18 @@
+(;FF[4]CA[UTF-8]AP[gogui-twogtp:1.4.9]SZ[9]
+KM[0]PB[TCG-HollowNoGo-Demo:2021]PW[TCG-HollowNoGo-Demo:2021]DT[2021-12-28]
+RE[W+R]
+C[Black command: ../pj-4-code-v1/nogo1 --shell --black="mcts T=100 c=0.3 simenemy=a"
+White command: ../pj-4-code-v1/nogo3 --shell --white="mcts T=100 c=0.3 simenemy=a"
+Black version: 2021
+White version: 2021
+Result[Black\]: W+R
+Result[White\]: W+R
+Host: NV16 (Intel(R) Xeon(R) CPU E5-2678 v3 @ 2.50GHz)
+Date: December 28, 2021 at 11:37:32 PM CST]
+;B[ia];W[hg];B[fi];W[ad];B[ig];W[ah];B[hb];W[bh];B[ab];W[ha]
+;B[dh];W[bi];B[bg];W[cg];B[ii];W[ei];B[fa];W[id];B[ba];W[ge]
+;B[gh];W[bb];B[cf];W[ga];B[fg];W[bd];B[gd];W[hi];B[cc];W[fc]
+;B[da];W[af];B[gf];W[ca];B[ie];W[be];B[ag];W[dc];B[ci];W[di]
+;B[aa];W[if];B[ch];W[hh];B[eb];W[bc];B[bf];W[cd];B[eg];W[db]
+;B[ec];W[fb];B[gi];W[eh];B[gg];W[hd];B[ic];W[gb];B[hc];W[ae]
+;B[ib];W[hf])

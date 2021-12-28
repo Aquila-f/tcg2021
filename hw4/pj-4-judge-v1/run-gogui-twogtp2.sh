@@ -1,8 +1,8 @@
 #!/bin/bash
 echo "GoGui-TwoGTP Launcher V20211112"
 # commands for player 1
-P1B='../pj-4-code-v1/nogo --shell --black="mcts N=5000 c=1"'
-P1W='../pj-4-code-v1/nogo --shell --white="mcts N=5000 c=1"'
+P1B='../pj-4-code-v1/nogo1 --shell --black="mcts T=1000 c=0.3 simenemy=a TMT=lr"'
+P1W='../pj-4-code-v1/nogo1 --shell --white="mcts T=1000 c=0.3 simenemy=a TMT=lr"'
 # P1B='./nogo-judge --shell --name="Judge-Weak-Black" --black="N=200 c=0.1 unlock!"'
 # P1W='./nogo-judge --shell --name="Judge-Weak-White" --white="N=200 c=0.1 unlock!"'
 # P1B='./nogo-judge --shell --name="Judge-Weak-Black" --black="weak"'
@@ -10,16 +10,16 @@ P1W='../pj-4-code-v1/nogo --shell --white="mcts N=5000 c=1"'
 # commands for local player 2
 # P2B='./nogo-judge --shell --name="Judge-Weak-Black" --black="N=200 c=0.1 unlock!"'
 # P2W='./nogo-judge --shell --name="Judge-Weak-White" --white="N=200 c=0.1 unlock!"'
-P2B='./nogo-judge --shell --name="Judge-Weak-Black" --black="mcts N=5000 c=1 unlock!"'
-P2W='./nogo-judge --shell --name="Judge-Weak-White" --white="mcts N=5000 c=1 unlock!"'
-# P2B='../pj-4-code-v1/nogo --shell --black="mcts N=3000 c=0.1 simenemy=a"'
-# P2W='../pj-4-code-v1/nogo --shell --white="mcts N=3000 c=0.1 simenemy=a"'
+# P2B='./nogo-judge --shell --name="Judge-Weak-Black" --black="mcts N=10000 c=1 unlock!"'
+# P2W='./nogo-judge --shell --name="Judge-Weak-White" --white="mcts N=10000 c=1 unlock!"'
+P2B='../pj-4-code-v1/nogo2 --shell --black="mcts T=1000 c=0.3 simenemy=a TMT=lr"'
+P2W='../pj-4-code-v1/nogo2 --shell --white="mcts T=1000 c=0.3 simenemy=a TMT=lr"'
 # commands for remote player 2W
 #P2B="gogui-client tcglinux1 10000"
 #P2W="gogui-client tcglinux1 10000"
 
 # other settings
-games=${1:-500} # total games to play
+games=${1:-100} # total games to play
 timelimit=36 # total thinking time in second
 configs="-size 9 -komi 0 -auto -games $((games/2)) -verbose" # gogui-twogtp
 

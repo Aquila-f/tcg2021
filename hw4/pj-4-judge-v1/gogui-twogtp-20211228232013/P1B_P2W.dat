@@ -1,0 +1,17 @@
+# Black: TCG-HollowNoGo-Demo
+# BlackCommand: ../pj-4-code-v1/nogo1 --shell --black="mcts T=100 c=0.3 simenemy=a"
+# BlackLabel: TCG-HollowNoGo-Demo:2021
+# BlackVersion: 2021
+# Date: December 28, 2021 at 11:20:13 PM CST
+# Host: NV16 (Intel(R) Xeon(R) CPU E5-2678 v3 @ 2.50GHz)
+# Komi: 0
+# Referee: -
+# Size: 9
+# White: TCG-HollowNoGo-Demo
+# WhiteCommand: ../pj-4-code-v1/nogo2 --shell --white="mcts T=100 c=0.3 simenemy=a"
+# WhiteLabel: TCG-HollowNoGo-Demo:2021
+# WhiteVersion: 2021
+# Xml: 0
+#
+#GAME	RES_B	RES_W	RES_R	ALT	DUP	LEN	TIME_B	TIME_W	CPU_B	CPU_W	ERR	ERR_MSG
+0	W+R	W+R	W+R	0	-	64	3.3	3.2	0	0	0	

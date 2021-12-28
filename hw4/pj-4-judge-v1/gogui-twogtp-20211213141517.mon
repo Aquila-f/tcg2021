@@ -1,7 +1,0 @@
-#!/bin/bash
-trap 'kill $(jobs -p) 2>/dev/null; exit 0;' INT
-touch gogui-twogtp-20211213141517/P1B_P2W.txt gogui-twogtp-20211213141517/P2B_P1W.txt
-tail -f gogui-twogtp-20211213141517/P1B_P2W.txt &
-tail -f gogui-twogtp-20211213141517/P2B_P1W.txt &
-while [ -e gogui-twogtp-20211213141517.mon ]; do sleep 1; done
-kill $(jobs -p) 2>/dev/null
