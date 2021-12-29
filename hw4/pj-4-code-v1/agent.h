@@ -25,7 +25,7 @@
 #include <thread>
 #include <fstream>
 
-// class thread_obj;
+class thread_obj;
 
 
 
@@ -159,18 +159,22 @@ public:
 
 			clock_t now = clock()+time_managment();
 
-			// std::thread th1(MCTS, (after, rootnode, now));
+			
 
-			// thread_obj snb(555);
+
+
+			// thread_obj snb(5, space, space_a, c, simulation_count, simulation_time, enemy_state_playmode);
 
 			// std::thread th1(snb, &rootnode[0] ,now ,after);
-			// std::thread th2(snb, &rootnode[1], 2);
 
-
-			// MCTS(after, rootnode, now);
-		
 			// th1.join();
-			// th2.join();
+
+			// for(auto tno : rootnode->level_vector){
+				
+			// 	outputnode(tno);
+			// }
+
+
 			
 			while(now > clock()){
 				self_simulate_win = false;
@@ -275,26 +279,41 @@ public:
 			inspace2 = space_a;
 		}
 
-		bool self_loss_flag;
+		// bool self_loss_flag;
 		std::shuffle(inspace1.begin(), inspace1.end(), engine);
+		// std::shuffle(inspace2.begin(), inspace2.end(), engine);
+		int rmc = 0;
 		for (const action::place& move : inspace1) {
 			if (move.apply(after) == board::legal){
-				self_loss_flag = true;
+				// self_loss_flag = true;
 				move.apply(after);
 				// std::cout << "enemy : \n"<< after;
-				self_loss_flag = randomplay_loss(after, inspace2);
+
+				for(;rmc<inspace2.size();rmc++){
+					if(inspace2[rmc].apply(after) == board::legal){
+
+						inspace2[rmc].apply(after);
+						// self_loss_flag = false;
+						break;
+					}
+				}
+				if(rmc == inspace2.size()) return true;
+
+				// self_loss_flag = randomplay_loss(after, inspace2);
 
 				// if(self_loss_flag) std::cout << "self loss\n";
-				if(self_loss_flag) return true;
+				// if(self_loss_flag) return true;
 			}
 		}
 		// if(!self_loss_flag) std::cout << " enemy loss\n";
-		if(!self_loss_flag) return false;
+		// if(!self_loss_flag) return false;
+		return false;
 	}
 
-	bool randomplay_loss(board& after, std::vector<action::place> color_space){
+	bool randomplay_loss(board &after, std::vector<action::place> &color_space){
 
 		std::shuffle(color_space.begin(), color_space.end(), engine);
+
 		for (const action::place& move_a : color_space){
 			if (move_a.apply(after) == board::legal){
 				move_a.apply(after);
@@ -305,17 +324,6 @@ public:
 		//loss return ture
 		return true;
 	}
-
-	// struct node{
-	// 	double winvalue;
-	// 	double totalmove_count;
-	// 	int available_node_count;
-	// 	action::place move;
-	// 	std::vector<node*> level_vector;
-	// 	// std::unordered_map<std::string, node*> same_level_node_table;
-	// 	node() : winvalue(0),totalmove_count(0),available_node_count(-1),move(1,0){}
-	// };
-
 
 	void playOneSequence(node*& rootnode,board& state){
 
@@ -540,15 +548,14 @@ public:
 		std::cout << ltm->tm_sec << std::endl;
 	}
 
-	std::vector<action::place> space;
-	std::vector<action::place> space_a;
+	
 
 private:
-	// std::vector<action::place> space;
+	std::vector<action::place> space;
 	board::piece_type who;
-	// std::vector<action::place> space_a;
+	std::vector<action::place> space_a;
 
-
+	
 	std::vector<node*> update_node_vector;
 	bool self_simulate_win;
 	std::string enemy_state_playmode;
