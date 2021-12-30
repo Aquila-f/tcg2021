@@ -67,8 +67,8 @@ int main(int argc, const char* argv[]) {
 		summary |= stat.is_finished();
 	}
 
-	player black("c=0 simenemy=mctsn N=100 T=10005 TMT=normal name=" + black_args + " role=black");
-	player white("c=0 simenemy=mctsn N=100 T=10005 TMT=normal name=" + white_args + " role=white");
+	player black("c=0 simenemy=mctsn N=100 T=10005 TMT=normal Thread=1 name=" + black_args + " role=black");
+	player white("c=0 simenemy=mctsn N=100 T=10005 TMT=normal Thread=1 name=" + white_args + " role=white");
 
 	if (!shell) { // launch standard local games
 		while (!stat.is_finished()) {

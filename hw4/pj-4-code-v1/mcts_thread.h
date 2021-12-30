@@ -11,7 +11,7 @@
 #include "board.h"
 #include "action.h"
 
-
+#include <unistd.h>
 #include <thread>
 #include <fstream>
 
@@ -26,20 +26,23 @@ struct node{
 	};
 
 
-class thread_obj{
+class mcts_thread_obj{
 public:
-	thread_obj(int aaa, std::vector<action::place> space, std::vector<action::place> space_a,
-	double c, double simulation_count, double simulation_time, std::string enemy_state_playmode) : 
-	space_(space), space_a_(space_a), enemy_state_playmode_(enemy_state_playmode),
+	mcts_thread_obj(int aaa, std::vector<action::place> space, std::vector<action::place> space_a,
+	double c, double simulation_count, double simulation_time, std::string enemy_state_playmode,
+	std::default_random_engine engine) : 
+	thread_id(aaa), space_(space), space_a_(space_a), enemy_state_playmode_(enemy_state_playmode),
 	c_(c), simulation_count_(simulation_count),
-	simulation_time_(simulation_time){};
+	simulation_time_(simulation_time), rd_engine(engine){};
 
 	void operator()(node* rootnode, clock_t limit_time_, board fixstate){
+		// node* rootnode1 = new node[1];
 		
 		int sim_times = 0;
-		// rootnode->winvalue += 12123;
+		
 		board after;
-		while(limit_time_ > clock()){
+
+		while(limit_time_ > millisec()){
 			self_simulate_win = false;
 			after = fixstate;
 			playOneSequence(rootnode, after);
@@ -47,7 +50,7 @@ public:
 			sim_times++;
 			if(simulation_time_ == 10005 && sim_times >= simulation_count_) break;
 		}
-		std::cout << sim_times << std::endl;
+		// std::cout << sim_times << std::endl;
 	}
 
 	void updatenode(bool win){
@@ -79,8 +82,10 @@ public:
 		}
 
 		// bool self_loss_flag;
-		std::shuffle(inspace1.begin(), inspace1.end(), engine);
-		std::shuffle(inspace2.begin(), inspace2.end(), engine);
+		std::shuffle(inspace1.begin(), inspace1.end(), rd_engine);
+		// std::random_shuffle(inspace1.begin(), inspace1.end());
+		// std::random_shuffle(inspace2.begin(), inspace2.end());
+		std::shuffle(inspace2.begin(), inspace2.end(), rd_engine);
 		int rmc = 0;
 		for (const action::place& move : inspace1) {
 			if (move.apply(after) == board::legal){
@@ -97,21 +102,14 @@ public:
 					}
 				}
 				if(rmc == inspace2.size()) return true;
-
-				// self_loss_flag = randomplay_loss(after, inspace2);
-
-				// if(self_loss_flag) std::cout << "self loss\n";
-				// if(self_loss_flag) return true;
 			}
 		}
-		// if(!self_loss_flag) std::cout << " enemy loss\n";
-		// if(!self_loss_flag) return false;
 		return false;
 	}
 
 	bool randomplay_loss(board& after, std::vector<action::place> color_space){
 
-		std::shuffle(color_space.begin(), color_space.end(), engine);
+		std::shuffle(color_space.begin(), color_space.end(), rd_engine);
 		for (const action::place& move_a : color_space){
 			if (move_a.apply(after) == board::legal){
 				move_a.apply(after);
@@ -132,7 +130,7 @@ public:
 		if(rootnode->available_node_count == -1){
 			int heurtmp = 0;
 
-			std::shuffle(space_.begin(), space_.end(), engine);
+			std::shuffle(space_.begin(), space_.end(), rd_engine);
 
 			for (const action::place move : space_) {
 				after = state;
@@ -194,7 +192,7 @@ public:
 
 		if(rootnode->available_node_count == -1){
 			int heurtmp = 0;
-			std::shuffle(space_a_.begin(), space_a_.end(), engine);
+			std::shuffle(space_a_.begin(), space_a_.end(), rd_engine);
 			for (const action::place move : space_a_) {
 				after = state;
 				if (move.apply(after) == board::legal){
@@ -220,7 +218,7 @@ public:
 
 		// std::cout << "white move size - " << rootnode->level_vector.size() << "\n";
 		if(enemy_state_playmode_ == "random"){
-			std::shuffle(rootnode->level_vector.begin(), rootnode->level_vector.end(), engine);
+			std::shuffle(rootnode->level_vector.begin(), rootnode->level_vector.end(), rd_engine);
 			
 			tpnode = rootnode->level_vector[0];
 			tpnode->move.apply(state);
@@ -283,10 +281,16 @@ public:
 		
 	}
 
-protected:
-	std::default_random_engine engine;
+time_t millisec() {
+		auto now = std::chrono::system_clock::now().time_since_epoch();
+		return std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
+	}
+
+// protected:
+// 	std::default_random_engine engine;
 
 private:
+	int thread_id;
 	std::vector<action::place> space_;
 	std::vector<action::place> space_a_;
 
@@ -297,5 +301,5 @@ private:
 	double c_;
 	double simulation_count_;
 	double simulation_time_;
-
+	std::default_random_engine rd_engine;
 };
