@@ -145,8 +145,9 @@ public:
 	//td
 	virtual void close_episode(const std::string& flag = "") {
 		time_management = 1;
-
 	}
+
+	
 
 
 
@@ -156,18 +157,20 @@ public:
 		if(name() == "mcts"){
 
 			
-			node* rootnode = new node[thread_num_];
+			// node* rootnode = new node[thread_num_];
+			node_result* rootnode = new node_result[thread_num_];
 			
 			
 			board after = state;
 			int sim_times = 0;
 
 			clock_t now = millisec()+time_managment();
-			// std::cout << now << std::endl;			
+			// clock_t origin = millisec();		
 			
 			std::vector<mcts_thread_obj> mctsobj_vector;
 			std::vector<std::thread> thread_vector;
-			std::map<action::place, int> sum_node_table;
+			// std::map<action::place, int> sum_node_table;
+			
 
 			// std::cout << "---now--- : " << millisec() << "\n";
 			
@@ -179,88 +182,38 @@ public:
 				thread_vector.push_back(std::move(th1));
 			}
 
-
 			for(int i=0; i<thread_num_; i++){
 				thread_vector[i].join();
 			}
 
+			// std::cout << "time : " << millisec() - origin << "\n";
 
+			std::vector<int> sum_node_table(81);
+			
 			for(int i=0; i<thread_num_; i++){
-				// std::cout << "--" << i << "--" << rootnode[i].totalmove_count << "\n";
-				int s = rootnode[0].level_vector.size();
-
-				if(i == 0){
-					for(int j=0; j<s; j++){
-						sum_node_table[rootnode[0].level_vector[j]->move] = rootnode[0].level_vector[j]->totalmove_count;
-					}
-				}else{
-					for(int j=0; j<s; j++){
-						sum_node_table[rootnode[i].level_vector[j]->move] += rootnode[i].level_vector[j]->totalmove_count;
-					}
+				for(int j=0; j<81; j++){
+					sum_node_table[j] += rootnode[i].result_vector[j];
 				}
 			}
 
-			action::place final_move(0,0);
-			
+
+			int final_position = 0;
 
 			double maxvalue = -1;
 
-
-			for(auto tno : sum_node_table){
-				// std::cout << tno.first << " : " << tno.second << std::endl;
-				if(maxvalue <= tno.second){
-					maxvalue = tno.second;
-					final_move = tno.first;
+			for(int i=0;i<81;i++){
+				if(maxvalue <= sum_node_table[i]){
+					maxvalue = sum_node_table[i];
+					final_position = i;
 				}
 			}
 
-			// std::cout << final_move << std::endl;
-
 
 			after = state;
-			final_move.apply(after);
-
-			
-
-			noderelease(rootnode);
-
-			// std::cout << final_move << "-\n";
-
-			// if(final_move)
-			return final_move;
+			after.place(final_position, who);
+			return action::place(final_position, who);
 
 			exit(0);
-
-		}else if(name() == "heur"){
-			// // std::cout << "heur" << "\n";
-			// int heurtmp = 0;
-			// for (const action::place& move : space) {
-			// 	board after = state;
-			// 	if (move.apply(after) == board::legal && heurtmp%2 != 0){
-			// 		return move;
-			// 	}
-			// 	heurtmp ++;
-			// }
-			// heurtmp = 0;
-
-			// for (const action::place& move : space) {
-			// 	board after = state;
-			// 	if (move.apply(after) == board::legal && check_neighbor(state, heurtmp)){
-			// 		return move;
-			// 	}
-			// 	heurtmp ++;
-			// }
-			
-			// heurtmp = 0;
-			// std::shuffle(space.begin(), space.end(), engine);
-			// for (const action::place& move : space) {
-			// 	board after = state;
-			// 	if (move.apply(after) == board::legal){
-			// 		return move;
-			// 	}state
-			// 	heurtmp ++;
-			// }
-			// return action();
 
 		}else{
 			std::shuffle(space.begin(), space.end(), engine);
@@ -278,6 +231,8 @@ public:
 		auto now = std::chrono::system_clock::now().time_since_epoch();
 		return std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
 	}
+
+	
 
 	
 
@@ -331,7 +286,7 @@ public:
 	}
 
 	void outputnode(const node* tno){
-		std::cout << "move: " << action::place(tno->move) << " ";
+		// std::cout << "move: " << action::place(tno->move) << " ";
 		std::cout << "ttcu: " << tno->totalmove_count << " ";
 		std::cout << "winc: " << tno->winvalue << " ";
 		std::cout << "ttcu: " << tno->available_node_count << "\n";

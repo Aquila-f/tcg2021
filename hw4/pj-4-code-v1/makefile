@@ -4,7 +4,7 @@ all:
 	g++ -std=c++11 -O3 -g -Wall -fmessage-length=0 -o nogo1 nogo.cpp -lpthread
 2:
 	g++ -std=c++11 -O3 -g -Wall -fmessage-length=0 -o nogo2 nogo.cpp -lpthread
-gg:
-	g++ -std=c++11 -O3 -g -Wall -fmessage-length=0 -o nogo2 nogo.cpp -lpthread -ggdb
+test:
+	g++ -std=c++11 -O3 -g -Wall -fmessage-length=0 -o nogo_test nogo.cpp -lpthread
 clean:
 	rm nogo
