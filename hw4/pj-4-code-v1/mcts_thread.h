@@ -66,7 +66,9 @@ public:
 		}
 		std::cout << sim_times << std::endl;
 
+		
 		for(auto n : rootnode1->random_vector){
+			// outputnode(rootnode1->level_vector[n]);
 			rootnode->result_vector[n] = rootnode1->level_vector[n]->totalmove_count;
 		}
 
@@ -97,13 +99,27 @@ public:
 
     bool simulate_one(board after, bool is_self){
 
-		// board stete = after;
+		// board state = after;
 
 		// std::vector<board::point> empty;
 		// for (unsigned i = 0; i < 81; i++)
-		// 	if (stete(i) == board::empty) empty.push_back(i);
+		// 	if (state(i) == board::empty) empty.push_back(i);
 
 		// std::shuffle(empty.begin(), empty.end(), rd_engine);
+		// int b = 0;
+		// for(int a=0; a<empty.size(); a++){
+		// 	if(state.place(empty[a]) == board::legal){
+		// 		// std::cout << state;
+		// 		for(;b<empty.size();b++){
+		// 			if(state.place(empty[b]) == board::legal){
+		// 				// std::cout << state;
+		// 				break;
+		// 			}
+		// 		}
+		// 		if(b == empty.size()) return true;
+		// 	}
+		// }
+		// return false;
 
 		// int g = 0, taketurn = stete.info().who_take_turns;
 		// // int b = 0, w =
@@ -190,7 +206,7 @@ public:
 
 
 
-		node* tpnode = new node[1];
+		// node* tpnode = new node[1];
 		double maxtnoval = -1;
 		double v;
 		int max_board_place = 0;
@@ -209,14 +225,14 @@ public:
 				v = rootnode->level_vector[board_place]->winvalue/rootnode->level_vector[board_place]->totalmove_count+c_*sqrt(log(rootnode->totalmove_count)/rootnode->level_vector[board_place]->totalmove_count);
 				if(maxtnoval <= v){
 					maxtnoval = v;
-					tpnode = rootnode->level_vector[board_place];
+					// tpnode = rootnode->level_vector[board_place];
 					max_board_place = board_place;
 				}
 			}
 		}
 		state.place(max_board_place);
 		// tpnode->move.apply(state);
-		simulate_enemy_move(tpnode, state);
+		simulate_enemy_move(rootnode->level_vector[max_board_place], state);
 	};
 
 	void simulate_enemy_move(node*& rootnode, board& state){
@@ -259,9 +275,7 @@ public:
 			return;
 		}
 
-
-		node* tpnode = new node[1];
-
+		
 		double maxtnoval = -1;
 		int max_board_place = -1;
 
@@ -277,22 +291,28 @@ public:
 				exit(0);
 			}else{
 				v = 1-(rootnode->level_vector[board_place]->winvalue/rootnode->level_vector[board_place]->totalmove_count)+c_*sqrt(log(rootnode->totalmove_count)/rootnode->level_vector[board_place]->totalmove_count);
-				// double v = 1-(tno->winvalue/tno->totalmove_count);
+
 				if(maxtnoval <= v){
 					maxtnoval = v;
-					tpnode = rootnode->level_vector[board_place];
+					
 					max_board_place = board_place;
 				}
 			}
 		}
 
 		state.place(max_board_place);
-		playOneSequence(tpnode, state);
+		playOneSequence(rootnode->level_vector[max_board_place], state);
 	}
 
 time_t millisec() {
 		auto now = std::chrono::system_clock::now().time_since_epoch();
 		return std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
+	}
+void outputnode(const node* tno){
+		std::cout << "move: " << tno->move_position << " ";
+		std::cout << "ttcu: " << tno->totalmove_count << " ";
+		std::cout << "winc: " << tno->winvalue << " ";
+		std::cout << "ttcu: " << tno->available_node_count << "\n";
 	}
 
 
@@ -301,6 +321,7 @@ private:
 	std::vector<action::place> space_;
 	std::vector<action::place> space_a_;
 
+	std::vector<int> play_sequence;
 	std::vector<node*> update_node_vector;
 	std::vector<node*> release_node_vector;
 	bool self_simulate_win;

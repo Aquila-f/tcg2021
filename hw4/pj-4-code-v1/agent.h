@@ -196,21 +196,25 @@ public:
 				}
 			}
 
+		
 
-			int final_position = 0;
 
-			double maxvalue = -1;
+			int final_position = 82;
+
+			double maxvalue = 1;
 
 			for(int i=0;i<81;i++){
+				// std::cout << i << " : " << sum_node_table[i] << "\n";
 				if(maxvalue <= sum_node_table[i]){
 					maxvalue = sum_node_table[i];
 					final_position = i;
 				}
 			}
+			// if(final_position == 82) return action();
 
 
-			after = state;
-			after.place(final_position, who);
+			// after = state;
+			// after.place(final_position, who);
 			return action::place(final_position, who);
 
 			exit(0);
