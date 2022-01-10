@@ -66,7 +66,7 @@ public:
 			sim_times++;
 			if(simulation_time_ == 10005 && sim_times >= simulation_count_) break;
 		}
-		std::cout << sim_times << std::endl;
+		// std::cout << sim_times << std::endl;
 
 		// for(int i=0;i<rootnode1->level_vector.size();i++){	
 		// 	outputnode(rootnode1->level_vector[i]);
@@ -201,6 +201,9 @@ public:
 		double v;
 		int max_board_place = 0;
 
+		double r_n, r_w;
+		double n_n, n_w;
+
 		for(auto board_place : rootnode->random_vector){
 			if(rootnode->level_vector[board_place]->totalmove_count == 0){
 				// std::cout << state;
@@ -214,9 +217,19 @@ public:
 				// // std::cout << state;
 				// exit(0);
 			}else{
-				int b = 0;
+				
+				n_n = rootnode->level_vector[board_place]->totalmove_count;
+				n_w = rootnode->level_vector[board_place]->winvalue;
+				r_n = rootnode->level_vector[board_place]->rave_totalmove_count;
+				r_w = rootnode->level_vector[board_place]->rave_win_count;
+				double beta = r_n/(n_n+r_n+4*r_n*n_n*0.000625);
+
+				//normal mcts
+				// v = n_w/n_n+c_*sqrt(log(rootnode->totalmove_count)/n_n);
+				//normal rave
+				v = (1-beta)*(n_w/n_n)+beta*(r_w/r_n)+c_*sqrt(log(rootnode->totalmove_count)/n_n);
 				// v = rootnode->level_vector[board_place]->winvalue/rootnode->level_vector[board_place]->totalmove_count+c_*sqrt(log(rootnode->totalmove_count)/rootnode->level_vector[board_place]->totalmove_count);
-				v = rootnode->level_vector[board_place]->rave_win_count/rootnode->level_vector[board_place]->rave_totalmove_count;
+				// v = rootnode->level_vector[board_place]->rave_win_count/rootnode->level_vector[board_place]->rave_totalmove_count;
 				if(maxtnoval <= v){
 					maxtnoval = v;
 					max_board_place = board_place;
@@ -231,11 +244,8 @@ public:
 
 	void simulate_enemy_move(node*& rootnode, board& state){
 		
-		// std::cout << playmode << ",";
-		
 
 		double v;
-
 		
 
 		board after = state;
@@ -276,6 +286,8 @@ public:
 		
 		double maxtnoval = -1;
 		int max_board_place = -1;
+		double r_n, r_w;
+		double n_n, n_w;
 
 		for(auto board_place : rootnode->random_vector){
 			if(rootnode->level_vector[board_place]->totalmove_count == 0){
@@ -290,8 +302,19 @@ public:
 				
 				exit(0);
 			}else{
+				n_n = rootnode->level_vector[board_place]->totalmove_count;
+				n_w = rootnode->level_vector[board_place]->winvalue;
+				r_n = rootnode->level_vector[board_place]->rave_totalmove_count;
+				r_w = rootnode->level_vector[board_place]->rave_win_count;
+				double beta = r_n/(n_n+r_n+4*r_n*n_n*0.000625);
+
+				//normal mcts
+				// v = 1-(n_w/n_n)+c_*sqrt(log(rootnode->totalmove_count)/n_n);
+				//normal rave
+				v = (1-beta)*(1-(n_w/n_n))+beta*(r_w/r_n)+c_*sqrt(log(rootnode->totalmove_count)/n_n);
+
 				// v = 1-(rootnode->level_vector[board_place]->winvalue/rootnode->level_vector[board_place]->totalmove_count)+c_*sqrt(log(rootnode->totalmove_count)/rootnode->level_vector[board_place]->totalmove_count);
-				v = rootnode->level_vector[board_place]->rave_win_count/rootnode->level_vector[board_place]->rave_totalmove_count;
+				// v = rootnode->level_vector[board_place]->rave_win_count/rootnode->level_vector[board_place]->rave_totalmove_count;
 
 				if(maxtnoval <= v){
 					maxtnoval = v;
