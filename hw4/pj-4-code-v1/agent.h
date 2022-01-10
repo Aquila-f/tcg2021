@@ -188,30 +188,55 @@ public:
 
 			// std::cout << "time : " << millisec() - origin << "\n";
 
-			std::vector<int> sum_node_table(81);
+			std::vector<double> sum_node_table(81);
 			
+
 			for(int i=0; i<thread_num_; i++){
+				// for(auto move_position : rootnode[0].ava_vector){
+				// 	sum_node_table[move_position] += rootnode[i].result_vector[move_position];
+				// }
 				for(int j=0; j<81; j++){
 					sum_node_table[j] += rootnode[i].result_vector[j];
 				}
 			}
 
-		
 
 
-			int final_position = 82;
+			int final_position = 0;
 
-			double maxvalue = 1;
+			double maxvalue = 0;
 
-			for(int i=0;i<81;i++){
-				// std::cout << i << " : " << sum_node_table[i] << "\n";
-				if(maxvalue <= sum_node_table[i]){
-					maxvalue = sum_node_table[i];
-					final_position = i;
+			for(auto move_position : rootnode[0].ava_vector){
+				// std::cout << move_position << " : " << sum_node_table[move_position] << "\n";
+				if(maxvalue <= sum_node_table[move_position]){
+					maxvalue = sum_node_table[move_position];
+					final_position = move_position;
 				}
 			}
-			// if(final_position == 82) return action();
+			// if(maxvalue == 82) return action();
+			
+			// for(int i=0;i<81;i++){
+			// 	// std::cout << i << " : " << sum_node_table[i] << "\n";
+			// 	if(maxvalue <= sum_node_table[i]){
+			// 		maxvalue = sum_node_table[i];
+			// 		final_position = i;
+			// 	}
+			// }
+			
+			// std::cout << "++ " << final_position << " : " << maxvalue << " ++\n";
+			// std::cout << state;
+			// if(maxvalue == 0) return action();
 
+			// maxvalue = 0;
+
+			// for(auto move_position : rootnode[0].ava_vector){
+			// 	// std::cout << move_position << " : " << sum_node_table[move_position] << "\n";
+			// 	if(maxvalue <= sum_node_table[move_position]){
+			// 		maxvalue = sum_node_table[move_position];
+			// 		final_position = move_position;
+			// 	}
+			// }
+			// if(final_position == 82) return action();
 
 			// after = state;
 			// after.place(final_position, who);
